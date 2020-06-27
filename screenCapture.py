@@ -58,22 +58,9 @@ def screen_record():
 
 
 if __name__ == "__main__":
-    '''
-    DRC2020_Screen_Recordings
-    test_image=cv2.imread('zukoLightning.jpg')
-    test_image=np.array(test_image)
-    print(test_image)
-    cv2.imwrite(os.path.join(os.path.expanduser('~'),'Desktop',"test.bmp"), test_image)
-    if not cv2.imwrite(os.path.join(os.path.expanduser('~'),'Desktop',"test.bmp"), test_image):
-    raise Exception("Could not write image")
-    '''
+
     screen_record()
-    '''
-    print("Current directory is %s" % path)
-    print("abspath is %s" %os.path.abspath(path))
-    print("dirname is %s" %os.path.dirname(path))
-    print("basename is %s" %os.path.basename(path))
-    '''
+
 
 
 

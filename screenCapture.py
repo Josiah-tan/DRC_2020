@@ -17,32 +17,45 @@ def roi(img,vertices):
     masked= cv2.bitwise_and(img,mask)
     return masked
 
+def RGB2Gray(img):
+    gray_img=cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    return gray_img
+
+def Can(img):
+    can_img=cv2.GaussianBlur(img,(5,5),0)
+    can_img=cv2.Canny(can_img,threshold1=50,threshold2=200)
+    return can_img
+
 #processes the image
 def process_img(original_image):
-    processed_img=cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
-    processed_img=cv2.GaussianBlur(processed_img,(5,5),0)
-    processed_img= cv2.Canny(processed_img,threshold1=50,threshold2=200)
+    processed_img=RGB2Gray(original_image)
+    processed_img= Can(processed_img)
     #vertices for the mask
     vertices= np.array([[0,480],[0,400],[50,200],[550,200],[600,400],[600,480]])
     processed_img= roi(processed_img,[vertices])
     return processed_img
 
 #function that takes a specific portion of the screen and saves it as a screenshot
-def screen_record():
+def screen_record(x,y,width,height):
     last_time= time.time()
     i=1
 
     while(True):
         #480x600 windowed mode
-        printscreen= np.array(ImageGrab.grab(bbox=(0,40,600,480)))
+
+        #printscreen is the original image
+        printscreen= np.array(ImageGrab.grab(bbox=(x,y,width,height)))
         print('loop took {} seconds'.format(time.time() - last_time))
         last_time = time.time()
+
+        #frame will be the processed image
         frame = process_img(printscreen)
 
         #change frame size
         dimensions = (416, 416)
         resized_image = process_image.image_resize(frame, dimensions)
-        cv2.imshow('window', frame)
+        cv2.imshow('original image', printscreen)
+        #cv2.imshow('window', frame)
 
         #writes the image 'frame' to the desired folder
         cv2.imwrite(os.path.join(os.path.expanduser('~/Downloads/University/DRC2020_Screen_Recordings'),str(i)+"test.jpg"), resized_image)
@@ -58,8 +71,7 @@ def screen_record():
 
 
 if __name__ == "__main__":
-
-    screen_record()
+    screen_record(0,40,600,480)
 
 
 

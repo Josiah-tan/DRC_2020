@@ -38,42 +38,36 @@ def process_img(original_image):
 #function that takes a specific portion of the screen and saves it as a screenshot
 def screen_record(x,y,width,height):
     last_time= time.time()
-    i=1
 
-    while(True):
+    #480x600 windowed mode
 
-        #printscreen is the original image
-        printscreen= np.array(ImageGrab.grab(bbox=(x,y,width,height)))
-        print('loop took {} seconds'.format(time.time() - last_time))
-        last_time = time.time()
+    #printscreen is the original image
+    printscreen= np.array(ImageGrab.grab(bbox=(x,y,width,height)))
+    print('loop took {} seconds'.format(time.time() - last_time))
+    last_time = time.time()
 
-        #frame will be the processed image
-        frame = process_img(printscreen)
+    #frame will be the processed image
+    frame = process_img(printscreen)
 
-        #change frame size
-        dimensions = (416, 416)
-        resized_image = process_image.image_resize(frame, dimensions)
-        cv2.imshow('original image', printscreen)
-        #cv2.imshow('window', frame)
+    #change frame size
+    dimensions = (416, 416)
+    resized_image = process_image.image_resize(frame, dimensions)
+    cv2.imshow('original image', printscreen)
+    #cv2.imshow('window', frame)
 
-        #writes the image 'frame' to the desired folder
-        cv2.imwrite(os.path.join(os.path.expanduser('~/Downloads/University/DRC2020_Screen_Recordings'),str(i)+"test.jpg"), resized_image)
-        #jump out of the code if the program is unable to save an image
-        if not cv2.imwrite(os.path.join(os.path.expanduser('~/Downloads/University/DRC2020_Screen_Recordings'),str(i)+"test.jpg"), resized_image):
-            raise Exception("Could not write image")
+    #writes the image 'frame' to the desired folder
+    cv2.imwrite(os.path.join(os.path.expanduser('~/Downloads/University/DRC2020_Screen_Recordings'),"test.jpg"), resized_image)
+    #jump out of the code if the program is unable to save an image
+    if not cv2.imwrite(os.path.join(os.path.expanduser('~/Downloads/University/DRC2020_Screen_Recordings'),"test.jpg"), resized_image):
+        raise Exception("Could not write image")
 
-        i=i+1
-        
-
-        #press the 'q' key on your keyboard to end the code
-        if cv2.waitKey(25) & 0xFF == ord('q'):
-            cv2.destroyAllWindows()
-            break
+    return printscreen
 
 
 if __name__ == "__main__":
-    screen_record(0,40,600,480)
+    while True:
+        screen_record(0,40,600,480)
 
-
-
-
+        if cv2.waitKey(25) & 0xFF == ord('q'):
+            cv2.destroyAllWindows()
+            break

@@ -41,7 +41,6 @@ def screen_record(x,y,width,height):
     i=1
 
     while(True):
-        #480x600 windowed mode
 
         #printscreen is the original image
         printscreen= np.array(ImageGrab.grab(bbox=(x,y,width,height)))
@@ -64,7 +63,9 @@ def screen_record(x,y,width,height):
             raise Exception("Could not write image")
 
         i=i+1
+        
 
+        #press the 'q' key on your keyboard to end the code
         if cv2.waitKey(25) & 0xFF == ord('q'):
             cv2.destroyAllWindows()
             break

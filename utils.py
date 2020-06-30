@@ -17,7 +17,7 @@ import h5py
 
 
 class Debugger:
-    """ used when I can't be bothered to comment stuff out when printing"""
+    """ used when I can't be bothered to comment stuff out when I don't want to print stuff out"""
     def __init__(self):
         self.__display = False
     def disp(self, something, manual_display_mode = True):
@@ -81,6 +81,7 @@ class JThdf(Debugger):
     def read_datasets(self, name = "", username = "", index = "all", dataset_file_name = "", mode = "r"):
         """
         NOTE: use np.concatenate(complete_dataset, axis = 0) to combine all the data in the keys
+        FIXED: <Closed HDF5 dataset> problemby changing return_data.append(dataset) to return_data.append(np.array(dataset))
         parameters -- name: this is the name of the dataset - could be "raw_x"
                    -- username: this is the username of the dataset - has to be your name
                    -- index: the default of index is all, however the dataset can be accessed via an index  such as 0, 1 or -1 for the last index
@@ -108,49 +109,98 @@ class JThdf(Debugger):
                 return_data = [] # list to store all the datasets within the name directory
                 for key in keys:
                     dataset = type_group.get(key)
+                    #print(np.array(dataset))
                     self.disp(f"{key}: {dataset.shape}")
-                    return_data.append(dataset)
-                complete_dataset = np.array(return_data)
-                self.disp(f"complete dataset.shape: {complete_dataset.shape}")
-                return complete_dataset
+                    return_data.append(np.array(dataset)) # note u have to convert it into np.array b4 appending it otherwise u end up with <closed dataset> or something
+                #complete_dataset = np.array(return_data)
+                complete_dataset = return_data
+                #self.disp(f"complete dataset.shape: {complete_dataset.shape}")
             else:
                 key = keys[index] # accessing a name via the index specified as a parameter
-                complete_dataset = np.array(np.array(type_group.get(key)))
+                complete_dataset = np.array(type_group.get(key))
                 self.disp(f"{key}: {complete_dataset.shape}") # displaying the shape of the returned dataset
-                return complete_dataset
+            return complete_dataset
     
     def create_whole_dataset(self, x = None, y = None, classes = None, key_x = "raw_x", key_y = "raw_y", key_classes = "classes", username = "", dataset_file_name = "", mode = 'a'):
+        """
+        parameters -- x: numpy array for x values
+                   -- y: numpy array for y values, e.g np.array([0,1,1,0])
+                   -- classes: list of classes which correspond to the encoding of y, e.g ["right", "left", "up", "down"]
+                   -- key_x: key value name for x_lis
+                   -- key_y: key value name for y_lis
+                   -- username: name of user
+                   -- mode: 'a' to append, 'w' to delete and create a new dataset
+        returns None
+        
+        layout -- dataset_file_name
+                    -- username
+                        -- key_x
+                            -- 0
+                            -- 1
+                            -- 2
+                        -- key_y
+                            -- 0
+                            -- 1
+                    -- key_classes
+        """      
+        
         
         """Using appended/ default values"""
-        if x == None:
+        if x is None:
             x = self.__data[key_x]
-        if y == None:    
+        if y is None:    
             y = self.__data[key_y]
-        if classes == None:
+        if classes is None:
             classes = self.__data[key_classes] 
         if dataset_file_name == "":
             dataset_file_name = self.__file_name
             
             
         
-        with h5py.File(self.__file_name, mode) as hdf:
+        with h5py.File(dataset_file_name, mode) as hdf:
             self.disp(list(hdf.keys()))
             if key_classes not in list(hdf.keys()):
                 hdf.create_dataset(key_classes, data = np.array([arrow_key.encode('utf-8') for arrow_key in classes])) # creating dataset for classes
         self.create_new_datasets(x, name = key_x, username = username, dataset_file_name = dataset_file_name, mode = 'a') # create dataset for x
         self.create_new_datasets(y, name = key_y, username = username, dataset_file_name = dataset_file_name, mode = 'a') # create dataset for y
     
-    def read_whole_dataset(self, key_x = "raw_x", key_y = "raw_y", key_classes = "classes", username = "", dataset_file_name = "", mode = 'r'):
+    def read_whole_dataset(self, key_x = "raw_x", key_y = "raw_y", key_classes = "classes", username = "", index = "all", dataset_file_name = "", mode = 'r'):
+        """
+        parameters -- key_x: key value name for x_lis
+                   -- username: name of user
+                   -- mode: 'r' to read
+        returns -- x: numpy array for x values
+                -- y: numpy array for y values, e.g np.array([0,1,1,0])
+                -- classes: list of classes which correspond to the encoding of y, e.g ["right", "left", "up", "down"]
+                          
+        layout -- dataset_file_name
+                    -- username
+                        -- key_x
+                            -- 0
+                            -- 1
+                            -- 2
+                        -- key_y
+                            -- 0
+                            -- 1
+                    -- key_classes
+        """
         if dataset_file_name == "":
             dataset_file_name = self.__file_name
         with h5py.File(dataset_file_name, mode) as hdf:
             classes = np.array(hdf.get(key_classes))
             classes = [x.decode('utf-8') for x in classes]
-        x = self.read_datasets(name = key_x, username = username, index = "all", dataset_file_name = dataset_file_name, mode = "r")    
-        y = self.read_datasets(name = key_y, username = username, index = "all", dataset_file_name = dataset_file_name, mode = "r")
+        x = self.read_datasets(name = key_x, username = username, index = index, dataset_file_name = dataset_file_name, mode = "r")    
+        y = self.read_datasets(name = key_y, username = username, index = index, dataset_file_name = dataset_file_name, mode = "r")
         return x, y, classes
     
     def append_data(self, data, name = ""):
+        """
+        parameters -- data: data to append to the dictionary
+                   -- name: name of the data
+        returns None
+        
+        __data (dictionary) layout -- { name1: [data11, data21], name2: [data12, data22], name3: [data13, data23, data33, data43]}
+        """
         self.disp("Appending to Datasets")
         if name in self.__data:
             self.__data[name].append(data)
@@ -159,6 +209,7 @@ class JThdf(Debugger):
                 self.__data[name] = data # had "classes" list in mind when creating this
             else:
                 self.__data[name] = [data]            
+
 class JTImageProcessing(JThdf):
     def __init__(self):
         super().__init__()
@@ -215,9 +266,16 @@ class JTTestCases(JTImageProcessing):
     def __init__(self):
         super().__init__()
         
-        program_number = -1
+        program_number = -2
         
-        programs = ("test JThdf __call__", "test_image_resize_from_file", "test_image_resize", "test_create_new_datasets", "test_append_data", "test_read_datasets", "test_whole_datasets", "test_user_interface")
+        programs = ("test JThdf __call__",
+                    "test_image_resize_from_file", 
+                    "test_image_resize", 
+                    "test_create_new_datasets",
+                    "test_append_data",
+                    "test_read_datasets",
+                    "test_whole_datasets",
+                    "test_user_interface")
         
         self.image_file_name = "aphid_train.jpg"
         self.dimensions = (150,150)

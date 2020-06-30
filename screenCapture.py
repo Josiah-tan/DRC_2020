@@ -4,7 +4,7 @@ import cv2
 import time
 import pyautogui
 import os
-from YOLOv3_tiny.utils import *
+from utils import *
 
 process_image = JTImageProcessing()
 
@@ -18,8 +18,11 @@ def roi(img,vertices):
     return masked
 
 def RGB2Gray(img):
-    gray_img=cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    return gray_img
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    gray3 = img[:,:,0] * 0.1 + img[:,:,1] * 0.1 + img[:,:,2] * 0.8
+    gray3 = gray3.astype(np.uint8)
+
+    return gray3
 
 def Can(img):
     can_img=cv2.GaussianBlur(img,(5,5),0)
@@ -36,31 +39,37 @@ def process_img(original_image):
     return processed_img
 
 #function that takes a specific portion of the screen and saves it as a screenshot
-def screen_record(x,y,width,height):
-    last_time= time.time()
+def screen_record(x,y,width,height, print_time = False, show_screen = True):
+    
+    if print_time:
+        last_time= time.time()
 
     #480x600 windowed mode
 
     #printscreen is the original image
     printscreen= np.array(ImageGrab.grab(bbox=(x,y,width,height)))
-    print('loop took {} seconds'.format(time.time() - last_time))
-    last_time = time.time()
+    if print_time:
+        print('loop took {} sesconds'.format(time.time() - last_time))
+        last_time = time.time()
 
     #frame will be the processed image
-    frame = process_img(printscreen)
+    #frame = process_img(printscreen)
+    
+    printscreen = cv2.cvtColor(printscreen, cv2.COLOR_BGR2RGB)
 
     #change frame size
-    dimensions = (416, 416)
-    resized_image = process_image.image_resize(frame, dimensions)
-    cv2.imshow('original image', printscreen)
-    #cv2.imshow('window', frame)
-
+    #dimensions = (416, 416)
+    #resized_image = process_image.image_resize(frame, dimensions)
+    if show_screen:
+        cv2.imshow('original image',printscreen )
+    #cv2.imshow('window', frame)    
+    """
     #writes the image 'frame' to the desired folder
     cv2.imwrite(os.path.join(os.path.expanduser('~/Downloads/University/DRC2020_Screen_Recordings'),"test.jpg"), resized_image)
     #jump out of the code if the program is unable to save an image
     if not cv2.imwrite(os.path.join(os.path.expanduser('~/Downloads/University/DRC2020_Screen_Recordings'),"test.jpg"), resized_image):
         raise Exception("Could not write image")
-
+    """
     return printscreen
 
 

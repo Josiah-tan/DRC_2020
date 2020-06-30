@@ -19,19 +19,45 @@ async def middleman(websocket, path):
         rotation = 0
         speed_increment = 200
         rotation_increment = 30
+        direction_vector = [0,0,0,0] #[w,a,s,d]
+
 
         dir = input()
 
-        if dir == "w":
+        if dir[0] == "w":
             speed += speed_increment
-        elif dir == "s":
+            direction_vector[0] = 1
+
+            if dir[1] == "a":
+                rotation -= rotation_increment
+                direction_vector[1] = 1
+
+            elif dir[1] == "d":
+                rotation += rotation_increment
+                direction_vector[3] = 1
+
+        elif dir[0] == "s":
             speed += speed_increment
-        elif dir == "a":
-            speed += speed_increment/2
+            direction_vector[2] = 1
+
+            if dir[0] == "a":
+                rotation -= rotation_increment
+                direction_vector[1] = 1
+
+            elif dir[0] == "d":
+                rotation += rotation_increment
+                direction_vector[3] = 1
+
+        elif dir[0] == "a":
             rotation -= rotation_increment
-        elif dir == "d":
-            speed += speed_increment/2
+            direction_vector[1] = 1
+
+        elif dir[0] == "d":
             rotation += rotation_increment
+            direction_vector[3] = 1
+
+
+        print(direction_vector)
 
 
         data = await websocket.recv()

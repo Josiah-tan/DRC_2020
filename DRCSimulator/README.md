@@ -14,5 +14,6 @@ If you're a developer looking to improve this repository, please look at `develo
 
 1. Use the terminal in which you ran  `python3 car_edited.py` to type in w/a/s/d and then hit enter
 2. After this the robot will move with a speed specified by `speed_increment` and rotate at an angle specified by `rotation_increment`
+3. If you want to use a vector input, use `interface_input.py` and your input will be off the form `wasd`, e.g. `1011` corresponding to the vector [w,a,s,d].
 
 Have fun!
